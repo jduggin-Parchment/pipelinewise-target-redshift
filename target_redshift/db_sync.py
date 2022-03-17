@@ -706,7 +706,7 @@ class DbSync:
         return new_column_name
 
     def update_new_column_value(self, old_column, new_column, stream):
-        update_column_value = "UPDATE {} SET {} = {}".format(self.table_name(stream, is_stage=False), new_column = old_column)
+        update_column_value = "UPDATE {} SET {} = {}".format(self.table_name(stream, is_stage=False), new_column, old_column)
         self.logger.info('Applying previous data to new column: {}'.format(update_column_value))
         try :
             self.query(update_column_value)
