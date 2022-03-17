@@ -698,7 +698,7 @@ class DbSync:
 
     def version_column(self, column_name, stream):
         new_column_name = "{}_{}".format(column_name.replace("\"", ""), time.strftime("%Y%m%d_%H%M"))
-        version_column = "ALTER TABLE {} RENAME COLUMN {} TO \"{}_{}\"".format(self.table_name(stream, is_stage=False),
+        version_column = "ALTER TABLE {} RENAME COLUMN {} TO \"{}\"".format(self.table_name(stream, is_stage=False),
                                                                                column_name,
                                                                                new_column_name)
         self.logger.info('Versioning column: {}'.format(version_column))
