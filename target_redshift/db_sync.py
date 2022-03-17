@@ -49,6 +49,7 @@ def column_type(schema_property, with_length=True):
     property_format = schema_property['format'] if 'format' in schema_property else None
     column_type = 'character varying'
     varchar_length = DEFAULT_VARCHAR_LENGTH
+    precision = 0
     if schema_property.get('maxLength', 0) > varchar_length:
         varchar_length = LONG_VARCHAR_LENGTH
     if 'object' in property_type or 'array' in property_type:
@@ -66,8 +67,9 @@ def column_type(schema_property, with_length=True):
         varchar_length = SHORT_VARCHAR_LENGTH
     elif 'number' in property_type:
         # Number types for our purpose is always monetary.  Convert to numeric from double precision.
-        column_type = 'numeric(38,2)'
-        with_length=False
+        column_type = 'numeric'
+        varchar_length = 38
+        precision = 2
     elif 'integer' in property_type and 'string' in property_type:
         column_type = 'character varying'
         varchar_length = LONG_VARCHAR_LENGTH
@@ -80,6 +82,8 @@ def column_type(schema_property, with_length=True):
     if with_length:
         if column_type == 'character varying' and varchar_length > 0:
             column_type = '{}({})'.format(column_type, varchar_length)
+        elif (column_type == 'numeric' and varchar_length > 0) :
+            column_type = '{}({},{})'.format(column_type, varchar_length, precision)
 
     return column_type
 
