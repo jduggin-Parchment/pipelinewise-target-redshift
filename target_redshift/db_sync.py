@@ -683,8 +683,9 @@ class DbSync:
         ]
 
         for (column_name, column) in columns_to_replace:
-            self.version_column(column_name, stream)
+            old_column_name = self.version_column(column_name, stream)
             self.add_column(column, stream)
+            self.update_new_column_value(old_column_name, column_name, stream)
 
         # Refresh table cache if required
         if self.table_cache and (len(columns_to_add) > 0 or len(columns_to_replace)):
@@ -696,12 +697,21 @@ class DbSync:
         self.query(drop_column)
 
     def version_column(self, column_name, stream):
+        new_column_name = "{}_{}".format(column_name.replace("\"", ""), time.strftime("%Y%m%d_%H%M"))
         version_column = "ALTER TABLE {} RENAME COLUMN {} TO \"{}_{}\"".format(self.table_name(stream, is_stage=False),
                                                                                column_name,
-                                                                               column_name.replace("\"", ""),
-                                                                               time.strftime("%Y%m%d_%H%M"))
+                                                                               new_column_name)
         self.logger.info('Versioning column: {}'.format(version_column))
         self.query(version_column)
+        return new_column_name
+
+    def update_new_column_value(self, old_column, new_column, stream):
+        update_column_value = "UPDATE {} SET {} = {}".format(self.table_name(stream, is_stage=False), new_column = old_column)
+        self.logger.info('Applying previous data to new column: {}'.format(update_column_value))
+        try :
+            self.query(update_column_value)
+        except Exception as e :
+            self.logger.info('Updating column failed: {}'.format(e))
 
     def add_column(self, column, stream):
         add_column = "ALTER TABLE {} ADD COLUMN {}".format(self.table_name(stream, is_stage=False), column)
